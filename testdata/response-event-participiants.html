@@ -5,7 +5,7 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta http-equiv="content-language" content="en-GB" />
 
-	<title>SiEntries - Dunnerdale Fell Race</title>
+	<title>SiEntries - Grand Union Canal 145 Mile Race 2022 | Birmingham - London</title>
 	<meta name="description" content="SiEntries is an Online Entries and Memberships System designed to simplify entering and administering any type of event which uses pre-entries." />
 	<meta name="copyright" content="SiEntries Ltd." />
 	<meta name="author" content="SiEntries Ltd." />
@@ -43,16 +43,16 @@
 	<link rel="shortcut icon" sizes="128x128" href="https://www.sientries.co.uk/android-128x128.png?v=4">
 	<link rel="shortcut icon" href="https://www.sientries.co.uk/favicon.ico?v=7" type="image/x-icon" />
 
-	<link rel="image_src" type="image/jpeg" href="https://www.sientries.co.uk/facebook/L8515.jpg" />
+	<link rel="image_src" type="image/jpeg" href="https://www.sientries.co.uk/facebook/L8765.jpg" />
 
 	<meta property="og:site_name" content="SiEntries" />
-	<meta property="og:title" content="Dunnerdale Fell Race - Saturday 13th November 2021" />	<meta property="og:image" content="https://www.sientries.co.uk/facebook/L8515.jpg" />
-	<meta property="og:description" content="Dunnerdale is a classic short race round the tiny but rugged fells between the Lickle and the Duddon valleys. The scenery is superb, the course is tough and varied and there’s a very nice pub at the finish." />
+	<meta property="og:title" content="Grand Union Canal 145 Mile Race 2022 | Birmingham - London - Friday 3rd June 2022" />	<meta property="og:image" content="https://www.sientries.co.uk/facebook/L8765.jpg" />
+	<meta property="og:description" content="Regarded by many as Britain’s premier Ultra, this is a 145 mile continuous race from Gas Street Basin in the Centre of Birmingham, to Little Venice in the heart of London. Easy to navigate, and relatively flat route, takes runners through a variety of..." />
 
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:site" content="@sientries" />
-	<meta name="twitter:title" content="Dunnerdale Fell Race - Saturday 13th November 2021" />	<meta name="twitter:image" content="https://www.sientries.co.uk/facebook/L8515.jpg" />
-	<meta name="twitter:description" content="Dunnerdale is a classic short race round the tiny but rugged fells between the Lickle and the Duddon valleys. The scenery is superb, the course is tough and varied and there’s a very nice pub at the finish." />
+	<meta name="twitter:title" content="Grand Union Canal 145 Mile Race 2022 | Birmingham - London - Friday 3rd June 2022" />	<meta name="twitter:image" content="https://www.sientries.co.uk/facebook/L8765.jpg" />
+	<meta name="twitter:description" content="Regarded by many as Britain’s premier Ultra, this is a 145 mile continuous race from Gas Street Basin in the Centre of Birmingham, to Little Venice in the heart of London. Easy to navigate, and relatively flat route, takes runners through a variety of..." />
 
 	<meta name="application-name" content="SiEntries">
 	<meta name="msapplication-TileColor" content="#ffffff"/>
@@ -61,8 +61,11 @@
 	<meta name="msapplication-wide310x150logo" content="mstile-wide.png">
 	<meta name="msapplication-square310x310logo" content="mstile-large.png">
 
-<!--suppress JSUnusedLocalSymbols -->
 <script type="text/javascript">
+
+var newSearchId = '';
+var indexId = '';
+var ajaxHandler = null;
 
 if (self != top)
 {
@@ -70,75 +73,201 @@ if (self != top)
 	top.location.href = self.location.href
 }
 
-
-function map_init()
+function validate_listsearch(index_id, search_in, search_equality, search_value)
 {
-    var iconFeature = new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([-3.198973, 54.303488]))
-    });
+    alertUnset();
 
-    iconFeature.setStyle(new ol.style.Style({
-        image: new ol.style.Icon({
-        src: 'https://www.sientries.co.uk/images/map_icons_new/FR.svg?ver=2',
-        anchor: [0.5, 36],
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'pixels',
-        imgSize: [28, 36],
-        size: [28, 36]
-        })
-    }));
+	if ( document.getElementById('search_in').selectedIndex < 1 )
+	{
+		return alertReturn(document.getElementById('search_in'), 'Please choose the field you would like to search on from the drop-down list.', false, true, 'list_options');
+	}
+	if ( isWhitespace(trimWhitespace(document.getElementById('search_value').value)) )
+	{
+		return alertReturn(document.getElementById('search_value'), 'Please enter what you would like to search for.', true, true, 'list_options');
+	}
+	if ( /["]/i.test(document.getElementById('search_value').value) )
+	{
+		return alertReturn(document.getElementById('search_value'), 'Search for cannot contain Double Quotes.', true, true, 'list_options');
+	}
 
-    var iconLayerSource = new ol.source.Vector({
-        features: [iconFeature]
-    });
+	ajaxPageLoad(index_id, search_in, search_equality, search_value);
 
-    var iconLayer = new ol.layer.Vector({
-      source: iconLayerSource
-    });
-
-    var osmMap = new ol.Map({
-        target: 'event_map_canvas',
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM()
-            }),
-            iconLayer
-        ],
-	    controls: ol.control.defaults({
-            attributionOptions: ({
-	            collapsible: false,
-                rotate: false
-            })
-        }),
-	    interactions: ol.interaction.defaults({
-		    altShiftDragRotate:false,
-		    pinchRotate:false
-	    }),
-        view: new ol.View({
-            center: ol.proj.fromLonLat([-3.198973, 54.303488]),
-            zoom: 10,
-            minZoom: 3,
-            maxZoom: 18
-        })
-    });
+	return true;
 }
 
+function SetSearchIn()
+{
+    newSearchId = '';
+    document.getElementById('search_value').value = '';
+	document.getElementById('search_value').select();
+    document.getElementById('search_value').focus();
+}
+
+function ajaxPageLoad(index_id, search_in, search_equality, search_value)
+{
+    if( ajaxHandler != null ) {
+            ajaxHandler.abort();
+            ajaxHandler = null;
+    }
+
+	if ( document.getElementById('index_id') && document.getElementById('index_id').value != index_id )
+	{
+		indexId = index_id;
+	}
+	if ( document.getElementById('search_in') && document.getElementById('search_in').value != search_in )
+	{
+		document.getElementById('search_in').value = search_in;
+	}
+	if ( document.getElementById('search_value') && document.getElementById('search_value').value != search_value )
+	{
+		document.getElementById('search_value').value = search_value;
+	}
+
+	ajaxHandler = $.ajax({
+		url: JscriptPath + "/a_list_load.php",
+		type: "POST",
+		data: 'event_id=8765&page_id=&index_id='+index_id+'&search_in='+search_in+'&search_equality='+search_equality+'&search_value='+search_value,
+		global: false,
+		beforeSend:function(){
+										$("#options_spinner").html('<div class="si-loading-overlay"><div class="si-loading-loading"><span class="si-loading-spinner"></span></div></div>');
+				$("#list_groups_outer").slideUp(100);
+								},
+		success: function(data){
+			if (data.error)
+			{
+				$("#AjaxMsgLine").html(data.message);
+				$("#AjaxMsgLine").addClass("ajax-errormsg");
+				alert(data.message);
+			}
+			else
+			{
+													$("#list_index_outer").html(data.index_html);
+					$("#list_groups_outer").empty();
+					$("#list_groups_outer").html(data.groups_html);
+					$("#options_spinner").html('');
+					$("#list_groups_outer").slideDown(300);
+					if ( data.groups_js != '' )
+					{
+						eval(data.groups_js);
+					}
+					if ( data.groups_style != '' )
+					{
+						eval(data.groups_style);
+					}
+											}
+		}
+	});
+}
 
 $(document).ready(function()
 {
-			map_init();
+			// Set options to load via JavaScript
+		$("#list_search_outer").html('<div class=\"ff-row\">    <div class=\"ff-label\"><label for=\"search_in\">Search</label>    </div>    <div class=\"ff-field\">     <div class=\"ff-input\">      <div class=\"sf-field\">       <select name=\"search_in\" id=\"search_in\" title=\"Please choose the field you would like to search on.\" class=\"form-field-noresize\" onchange=\"SetSearchIn();\">        <option label=\"&nbsp;\" value=\"\">&nbsp;</option>                                   <option label=\"Name\" value=\"COMPNAME\"                    >Name</option>                                     <option label=\"Class\" value=\"ENTRYCLASS\"                    >Class</option>                                     <option label=\"Club\" value=\"66798\"                    >Club</option>                               </select>      </div>      <div class=\"sf-field\"><select name=\"search_equality\" id=\"search_equality\" title=\"Please choose the type of search to perform.\" class=\"form-field-noresize\"><option label=\"Equals\" value=\"E\">Equals</option> <option label=\"Contains\" value=\"C\" selected=\"selected\">Contains</option> </select></div>      <div class=\"sf-field\"><input type=\"text\" name=\"search_value\" id=\"search_value\" value=\"\" size=\"14\" maxlength=\"30\" class=\"form-field-noresize\" title=\"Please enter what you would like to search for.\" /></div>     </div>    </div>   </div>   <div class=\"ff-row\">    <div class=\"ff-button\">          <input type=\"button\" name=\"btn_find\" value=\"Find Entries\" class=\"button-long button-edit\" onclick=\"return validate_listsearch(indexId, document.getElementById(\'search_in\').value, document.getElementById(\'search_equality\').value, document.getElementById(\'search_value\').value);\" />        </div>   </div>');
+
+		// Set up the Search For autocomplete code
+		$("#search_value").autocomplete({
+			source: function(request, response)
+			{
+				$.ajax(
+				{
+					type: "POST",
+					url: "a_list_autocomplete_search.php",
+					data: {	event_id: '8765',
+							search_in: document.getElementById('search_in').value,
+							search_value: request.term },
+					success: function( data )
+					{
+						if (data.error)
+						{
+							alert(data.message);
+						}
+						else
+						{
+							response( $.map( data, function( item )
+							{
+								return {
+									label: item.label,
+									value: item.value,
+									id: item.id
+								}
+							}));
+						}
+					}
+				});
+			},
+			minLength: 2,
+			change: function( event, ui )
+			{
+				if ( typeof(ui.item) === "undefined" || ui.item === null )
+				{
+					newSearchId = '';
+				}
+				else
+				{
+					newSearchId = ui.item.id;
+				}
+			}
+		});
+
+		// Make the enter key behave like a Find button press if we have valid search data, else make it a TAB key
+		$(".sf-field").keypress(function (e)
+		{
+			if ( (e.which && e.which == 13) || (e.keyCode && e.keyCode == 13) )
+			{
+				if ( document.getElementById('search_in').selectedIndex > 0 && isWhitespace(trimWhitespace(document.getElementById('search_value').value)) == false )
+				{
+					ajaxPageLoad(indexId, document.getElementById('search_in').value, document.getElementById('search_equality').value, document.getElementById('search_value').value)
+				}
+				else
+				{
+					document.getElementById('search_value').focus();
+				}
+				newSearchId = '';
+				if (e.preventDefault)
+				{
+					e.preventDefault();
+				}
+				else if (e.stopPropagation)
+				{
+					e.stopPropagation();
+				}
+				else
+				{
+					e.returnValue = false;
+				}
+				return false;
+			}
+			return true;
+		});
+
+		ajaxPageLoad('', '', '', '');
 	} );
 
 </script>
 
 <style>
-	ul.share-buttons { list-style: none; padding: 0; }
-	ul.share-buttons li { display: inline; float: left; padding: 0 20px 20px 0; }
-	ul.share-buttons img { width: 32px;	}
+	
+	
+	.ff-label { width: 30%; }
+	.ff-field { width: 68%; }
+	.sf-field { width: auto; float: left; margin: 0 0 0 8px; }
+	table.dataTable td.image-map { vertical-align: middle!important; }
 
-					.event-summary-label { white-space: nowrap; min-width: 150px!important; }
-			</style>
+	@media handheld and (max-width: 800px), screen and (max-width: 800px)
+	{
+																								#entry_list_0 td:nth-of-type(1):before { content: "Name:"; }
+																										#entry_list_0 td:nth-of-type(2):before { content: "Class:"; }
+																										#entry_list_0 td:nth-of-type(3):before { content: "Club:"; }
+																					}
 
+	@media only screen and (max-width: 650px)
+	{
+		.ff-label, .ff-field { width: 100%; }
+		.sf-field { width: auto; float: left; margin: 0 8px 4px 0; }
+	}
+
+	
+	</style>
 
 
 
@@ -235,138 +364,70 @@ $(document).ready(function()
 
 	<div class="event-header">
 <div class="event-header-left">
-<h1>Dunnerdale Fell Race</h1>
+<h1>Grand Union Canal 145 Mile Race 2022 | Birmingham - London</h1>
 </div>
 <div class="event-header-right">
-<div class="event-icon"><a href="https://www.facebook.com/bcrunners" target="_blank"><img src="https://www.sientries.co.uk/images/social_icons/facebook.svg" alt="Event Facebook Page" title="Event Facebook Page" width="32" height="32" /></a></div>
-<div class="event-icon"><a href="https://twitter.com/bc_runners" target="_blank"><img src="https://www.sientries.co.uk/images/social_icons/twitter.svg" alt="Event Twitter Feed" title="Event Twitter Feed" width="32" height="32" /></a></div>
-<div class="event-icon"><a href="https://fellrace.org.uk/races/dunnerdale" target="_blank"><img src="https://www.sientries.co.uk/images/social_icons/website.svg" alt="Event Website" title="Event Website" width="32" height="32" /></a></div>
+<div class="event-icon"><a href="https://www.facebook.com/CanalraceCIC/" target="_blank"><img src="https://www.sientries.co.uk/images/social_icons/facebook.svg" alt="Event Facebook Page" title="Event Facebook Page" width="32" height="32" /></a></div>
+<div class="event-icon"><a href="https://instagram.com/canalracecic" target="_blank"><img src="https://www.sientries.co.uk/images/social_icons/instagram.svg" alt="Event Instagram Page" title="Event Instagram Page" width="32" height="32" /></a></div>
+<div class="event-icon"><a href="https://twitter.com/gucr145" target="_blank"><img src="https://www.sientries.co.uk/images/social_icons/twitter.svg" alt="Event Twitter Feed" title="Event Twitter Feed" width="32" height="32" /></a></div>
+<div class="event-icon"><a href="https://canalrace.org.uk/grand-union-canal-race/" target="_blank"><img src="https://www.sientries.co.uk/images/social_icons/website.svg" alt="Event Website" title="Event Website" width="32" height="32" /></a></div>
 <div class="clear"></div>
 </div>
 </div>
 <div class="clear"></div>
 <div class="event-sub-header">
-<h2>Saturday 13th November 2021 <a href="https://www.sientries.co.uk/ical_sientries_event.php?id=E8515" title='Add event to calendar'><i class="far fa-calendar-plus calendar-icon" aria-hidden="true"></i></a></h2>
+<h2>Friday 3rd June 2022</h2>
 </div>
 <div class="clear"></div>
 
 	
+<noscript>
+<form method="get" action="https://www.sientries.co.uk/list.php" name="listsearch" id="listsearch">
+<input name="event_id" id="event_id" type="hidden" value="8765" />
+<input name="page_id" id="page_id" type="hidden" value="" />
+<input name="index_id" id="index_id" type="hidden" value="" />
+<input name="show_list" id="show_list" type="hidden" value="Y" />
+</noscript>
 
-	
-<div class="event_buttons_container">
+<div class="public-container">
+
+	<div class="public-box">
+	<div class="public-box-title" id="list_options_header">Entry List Options<span class="ajax-spinner" id="options_spinner"></span></div>
+	<div class="public-box-content" id="list_options_box">
+		<div class="event_buttons_container">
 <div class="event_buttons">
-<div><a href="https://www.sientries.co.uk/list.php?event_id=8515" class="button button-edit">Entry List</a></div>
-<div><a href="https://www.sientries.co.uk/enter.php?event_id=8515" class="button button-forward">ENTER ONLINE</a></div>
+<div><a href="https://www.sientries.co.uk/event.php?elid=Y&amp;event_id=8765" class="button button-backward">Event&nbsp;Details</a></div>
 </div>
 </div>
 <div class="clear"></div>
-
-<div class="event-summary">
-			<div class="event-summary-logo">
-			<div class="event-image"><img src="https://www.sientries.co.uk/logo/L8515.jpg" alt="Dunnerdale Fell Race" title="Dunnerdale Fell Race" /></div>
+		<div class="ff-table">
+			<div class="ff-row"></div>
+						<div id="list_search_outer">
+						</div>
+			<div id="list_index_outer">
+				<noscript>
+			<div class="ff-row"></div>
+		<div class="ff-row">
+			<div class="ff-button">
+									<input type="submit" name="btn_display" value="Display Entry List" class="button-long button-edit" />
+							</div>
 		</div>
-		<div class="event-summary-detail">
-						<div class="event-summary-row">
-				<div class="event-summary-label">Entries Open</div>
-				<div class="event-summary-text">Thursday 2nd September 2021</div>
-			</div>
-			<div class="event-summary-row">
-				<div class="event-summary-label">Entries Close</div>
-				<div class="event-summary-text">Wednesday 10th November 2021</div>
-			</div>
-									
-		
-		
-									<div class="event-summary-row">
-					<div class="event-summary-label">Entries so Far</div>
-					<div class="event-summary-text">374 Participants</div>
-				</div>
-			
-												
-		
-				<div class="event-summary-row">
-			<div class="event-summary-label">Entry Fees</div>
-			<div class="event-summary-text">
-				<div>
-<table class="table table-no-width">
-<tr>
-<td><p>FRA Member: &pound;9</p>
-<p>Non-Member: &pound;11</p></td>
-</tr>
-</table>
-</div>
-				<div class="event-summary-row"></div>
-			</div>
-		</div>
-		
-					<div class="event-summary-row">
-				<div class="event-summary-label"><i class="far fa-comment menu-icon" aria-hidden="true"></i> Contact</div>
-				<div class="event-summary-text">Nick Sebley - Organiser</div>
-			</div>
-							<div class="event-summary-row">
-				<div class="event-summary-label"><i class="fas fa-phone menu-icon" aria-hidden="true"></i> Phone</div>
-				<div class="event-summary-text">01229 715021</div>
-			</div>
-							<div class="event-summary-row">
-				<div class="event-summary-label"><i class="far fa-envelope menu-icon" aria-hidden="true"></i> Email</div>
-				<div class="event-summary-text"><a href="mailto:nsebley@aol.com">nsebley@aol.com</a></div>
-			</div>
-							<div class="event-summary-row">
-				<div class="event-summary-label"><i class="fas fa-tv menu-icon" aria-hidden="true"></i> Website</div>
-				<div class="event-summary-text"><a href="https://fellrace.org.uk/races/dunnerdale" target="_blank">https://fellrace.org.uk/races/dunnerdale</a></div>
-			</div>
-				<div class="event-summary-row"></div>
-	</div>
-</div>
-<div class="clear"></div>
-
-	<div class="ff-row"></div>
-			<p>To enter you must first <a href="https://www.sientries.co.uk/enter.php?event_id=8515">Log In</a> or <a href="https://www.sientries.co.uk/competitors/register_details.php">Register your Details</a> with SiEntries.</p>
 	
-	
-<p>Dunnerdale is a classic short race round the tiny but rugged fells between the Lickle and the Duddon valleys. The scenery is superb, the course is tough and varied and there&rsquo;s a very nice pub at the finish.</p>
-	<div class="protect_logo_image">
-		<img src="https://www.sientries.co.uk/images/payment_icons/refund_protect.svg" alt="Administered by Refund Protect" title="Administered by Refund Protect" width="55px" />
-	</div>
-	<div class="protect_logo_text">
-		<div class="protect_logo_text_padding">
-			<p>This event offers the option to purchase <a href="https://www.refundprotect.me/member-wording" target="_blank">upgraded refundable terms</a>, so that participants  may be able to get a refund if they are unable to attend due to unforeseen circumstances.</p>
+	</noscript>
+			</div>
 		</div>
 	</div>
-	<div class="clear"></div>
-
-
-<div class="event_buttons_container">
-<div class="event_buttons">
-<div><a href="https://www.sientries.co.uk/enter.php?event_id=8515" class="button button-forward">ENTER ONLINE</a></div>
-</div>
-</div>
-<div class="clear"></div>
-
-<hr />
-
-	<div id="event_media">
-		<h4>Save the date and share</h4>
-		<ul class="share-buttons">
-							<li><a href="https://www.sientries.co.uk/ical_sientries_event.php?id=E8515" title='Add event to calendar'><img alt="Add event to calendar" src="https://www.sientries.co.uk/images/social_icons/calendar.svg" width="32" height="32"></a></li>
-						<li><a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.sientries.co.uk&t=" title="Share on Facebook" target="_blank" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent('https://www.sientries.co.uk/event.php?event_id=8515') + '&t=' + encodeURIComponent('https://www.sientries.co.uk/event.php?event_id=8515')); return false;"><img alt="Share on Facebook" src="https://www.sientries.co.uk/images/social_icons/facebook.svg"></a></li>
-			<li><a href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fwww.sientries.co.uk&text=:%20http%3A%2F%2Fwww.sientries.co.uk" target="_blank" title="Tweet" onclick="window.open('https://twitter.com/intent/tweet?via=SiEntries&url='  + encodeURIComponent('https://www.sientries.co.uk/event.php?event_id=8515') + '&text=' + encodeURIComponent('I\'ve just entered the @bc_runners Dunnerdale Fell Race - Saturday 13th November 2021') + ':%20'); return false;"><img alt="Tweet" src="https://www.sientries.co.uk/images/social_icons/twitter.svg"></a></li>
-			<li><a href="mailto:?subject=SiEntries%20-%20Dunnerdale Fell Race&body=I%27ve%20just%20entered%20the Dunnerdale Fell Race%20-%20Saturday 13th November 2021:%20https%3A%2F%2Fwww.sientries.co.uk/event.php?event_id=8515" title="Send email"><img alt="Send email" src="https://www.sientries.co.uk/images/social_icons/email.svg"></a></li>
-		</ul>
 	</div>
-	<div class="clear"></div>
 
-	<div class="event_map_panel js-code">
-<h4>Event Location:</h4>
-<div id="event_map_canvas"></div>
-</div>
-<div class="clear"></div>
-<div class="w3w-row">
-	<div class="w3w-field"><img src="https://www.sientries.co.uk/images/social_icons/what-three-words.svg" width="20" height="20" class="inline" alt="What3Words" /></div>
-	<div class="w3w-field"><strong>what3words:</strong></div>
-	<div class="w3w-field"><a href="https://what3words.com/chum.laying.mooring?zoomlevel=16" target="_blank">chum.laying.mooring</a></div>
+	<div id="list_groups_outer">
+		</div>
+
+
 </div>
 
+<noscript>
+</form>
+</noscript>
 
 
 		</div>
