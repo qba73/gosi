@@ -13,7 +13,7 @@ import (
 	"github.com/qba73/gosi"
 )
 
-func TestCollectEvents(t *testing.T) {
+func TestListEvents(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		f, err := os.Open("testdata/response-all-events.html")
@@ -27,11 +27,48 @@ func TestCollectEvents(t *testing.T) {
 
 	c := colly.NewCollector()
 
-	got := gosi.CollectEvents(c, ts.URL)
+	got := gosi.ListEvents(c, ts.URL)
 
 	want := 468
 
 	if !cmp.Equal(len(got), want, cmpopts.IgnoreFields(gosi.SportEvent{}, "Title")) {
 		t.Errorf("gosi.CollectEvents(c, %s) \n%s\n", ts.URL, cmp.Diff(len(got), want))
+	}
+}
+
+func TestGetEvent(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		f, err := os.Open("testdata/response-single-event-open.html")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		io.Copy(rw, f)
+	}))
+	defer ts.Close()
+
+	c := colly.NewCollector()
+
+	got := gosi.GetEvent(c, ts.URL)
+
+	want := gosi.SportEvent{
+		Title:        "Bollihope Carrs Fell Race",
+		EntriesOpen:  "Tuesday 19th October 2021",
+		EntriesClose: "Thursday 9th December 2021 at 23:00",
+		EntriesSoFar: "45 Participants",
+		Organizer: gosi.Organizer{
+			Name:    "Andy Blackett",
+			Email:   "andyblackett@googlemail.com",
+			Website: "https://www.durhamfellrunners.org/bollihope-carrs/",
+		},
+		SocialMedia: gosi.SocialMedia{
+			Facebook: "https://www.facebook.com/45809454858",
+			Twitter:  "https://twitter.com/durhamfellrun",
+			Website:  "https://www.durhamfellrunners.org/bollihope-carrs/",
+		},
+	}
+
+	if !cmp.Equal(got, want) {
+		t.Errorf("gosi.GetEvent(c, \"8957\") \n%s\n", cmp.Diff(got, want))
 	}
 }
